@@ -1,1 +1,168 @@
+/*
+========================================================================================================================
+KPI Of Product&Sales : Finding the important kpi's related to product and sales , For checking organization growth.
+========================================================================================================================
+Objective : Used for finding the trends in organization growth according to product and sales.
+            1. Used for finding the day by day , monthly or yearly purchasing trends.
+            2. Used in finding top products which is playing crucial role in sales.
+            3. For preparing strategy for marking according to selling products.
+            4. How to improve the company revenue to smart product analysis
+========================================================================================================================
+*\
+
+
+
+--Calculating Important KPI's related to 'Sales & Product'
+--1.Purchasing Trends
+--2.Product Performance
+--3.Customer Behaviour
+--4.Revenue analytics
+
+
+--1.Total Revenue Analytics By Years
+select 
+YEAR(e.event_date) as yearly_revenue,
+ROUND(SUM(o.total_amount),2) as total_revenue
+from ecp.dbo.orders1 as o
+left join ecp.dbo.events1 as e
+     on o.user_id = e.user_id
+where event_type = 'purchase'
+group by YEAR(e.event_date)
+order by YEAR(e.event_date)
+
+--Result : Here,We calculated yearly revenue and concluded that our growth is very low in 2025(total 11 month included)
+--         as compared to 2024(total 12 month included)
+
+
+--2.Monthly Revenue Trend 
+select
+FORMAT(o.order_date,'yyyy-MM') as months,
+ROUND(SUM(total_amount),2) as monthly_revenue
+from ecp.dbo.orders1 as o
+left join ecp.dbo.events1 as e
+     on o.user_id = e.user_id
+where event_type = 'purchase'
+group by FORMAT(o.order_date,'yyyy-MM')
+order by FORMAT(o.order_date,'yyyy-MM')
+
+--Result : Here,We calculated monthly revenue trend and seen every month in both year contribute nearly same in revenue.
+
+
+--3.Sales Growth Rate
+with monthly_sales as (
+select
+FORMAT(o.order_date,'yyyy-MM') as months,
+ROUND(SUM(total_amount),2) as revenue
+from ecp.dbo.orders1 as o
+left join ecp.dbo.events1 as e
+     on o.user_id = e.user_id
+where event_type = 'purchase'
+group by FORMAT(o.order_date,'yyyy-MM')
+)
+select 
+months,
+revenue,
+lag(revenue) over(order by months) as previous_month,
+CONCAT(ROUND(((revenue - lag(revenue) over(order by months))/lag(revenue) over(order by months))*100,2),'%') as growth_percentage
+from monthly_sales
+
+--Result : Here,We calculated month by month growth rate of the company and seen it is unstable.
+--Recommendation - 1.Improve Customer Retention by loyalty programs,subscription plans etc.
+--               - 2.Optimize Marketing Spend
+
+
+--4.Top Selling Products
+select top 10
+p.product_name,
+ROUND(SUM(o.total_amount),2) as total_sales
+from ecp.dbo.orders1 as o
+left join ecp.dbo.events1 as e
+      on o.user_id = e.user_id
+left join ecp.dbo.products1 as p
+      on e.product_id = p.product_id
+group by p.product_name
+order by ROUND(SUM(o.total_amount),2) desc
+
+--Result : Here,we find our Top 10 best selling products 
+--Recommendation : 1. We have to remove those products which is selling less or less availability according to user demand
+--                 2. We have to increase the quantity of the products which is selling more so,that company revenue increase.
+
+
+--5.Category Performance
+select
+p.category,
+ROUND(SUM(o.total_amount),2) as category_revenue
+from ecp.dbo.orders1 as o
+left join ecp.dbo.events1 as e
+      on o.user_id = e.user_id
+left join ecp.dbo.products1 as p
+      on e.product_id = p.product_id
+group by p.category
+order by ROUND(SUM(o.total_amount),2) desc
+
+--Result : Here,We calculated category wise revenue which tells about
+--         the category which contribute more in revenue and here is
+--         'pet supplies' followed by toys which contribute highest in
+--         revenue.
+--Recommendation : Improve the revenue of bottom categories by
+--                1.Marketing
+--                2.Giving Discounts
+
+
+--6.Average Order Value
+select 
+ROUND(SUM(o.total_amount)/COUNT(o.order_id),2) as average_order_value
+from ecp.dbo.orders1 as o
+left join ecp.dbo.events1 e
+    on o.user_id = e.user_id
+where e.event_type = 'purchase'
+
+SELECT
+    ROUND(AVG(o.total_amount), 2) AS average_order_value
+FROM ecp.dbo.orders1 o
+WHERE EXISTS (
+    SELECT 1
+    FROM ecp.dbo.events1 e
+    WHERE e.user_id = o.user_id
+      AND e.event_type = 'purchase'
+)
+
+--Result : Here,we have average order value which is very less.We have to improve it.
+--Recommendation : Improve average order value by
+--                 1.By increasing the demands of products which is selling less.
+--                 2.By introducing more products according to latest trends in market.
+
+
+--7.Customer Retention Analysis
+select
+count(*) as total_user_ordered
+from ecp.dbo.orders1
+select 
+COUNT(distinct user_id) as returning
+from(
+select user_id
+from ecp.dbo.orders1
+group by user_id
+having COUNT(order_id) > 1
+)t
+
+--Result : We have very less users which are returning after doing specific task in website.
+--Recommendation : 1. We have to improve it by increasing the quality of the product.
+--                 2. By decreasing friction during the payment procedure and order delivery operation.
+
+
+--8.Customer Segmentation
+select
+user_id,
+COUNT(order_id) as Total_orders,
+ROUND(SUM(total_amount),2) as lifetime_value
+from ecp.dbo.orders1
+group by user_id
+order by ROUND(SUM(total_amount),2) desc
+
+--Result : Here,we have our loyal customers who regularly order from our site.We have to insure that who don't
+--         loose those loyal customers
+--Recommendation : We have to give them special treatment by special offers only for them and also regularly 
+--                 receive feedback from them.
+
 
