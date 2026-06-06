@@ -1,1 +1,147 @@
+/*
+Data Cleaning:
+=============================================================================================================================
+Objective: To clean the all tables by->
+           1. Removing null values
+           2. Removing Duplicate Values
+           3. Standardizing the data 
+           4. Dropping all unnecessary columns
+=============================================================================================================================
+Result: We get a clean datasets in the form of table, on which we can perform operations
+=============================================================================================================================
+*\
 
+--Data Cleaning
+
+--Checking for null values
+--For 'Events Table'
+select *,
+ROW_NUMBER() over(partition by event_id,user_id,product_id,event_type,event_date,event_time order by event_id) as row_num
+from ecp.dbo.events1
+
+with duplicate_cte as(
+select *,
+ROW_NUMBER() over(partition by event_id,user_id,product_id,event_type,event_date,event_time order by event_id) as row_num
+from ecp.dbo.events1
+)
+select * 
+from duplicate_cte
+where row_num > 1
+
+
+--For 'Order Table'
+select *,
+ROW_NUMBER() over(partition by order_id,user_id,order_date,order_time,total_amount order by order_id) as row_num
+from ecp.dbo.orders1
+
+with duplicate_cte2 as(
+select *,
+ROW_NUMBER() over(partition by order_id,user_id,order_date,order_time,total_amount order by order_id) as row_num
+from ecp.dbo.orders1
+)
+select * 
+from duplicate_cte2
+where row_num > 1
+
+
+--For 'Products Table'
+select *,
+ROW_NUMBER() over(partition by product_id,product_name,category,brand,price,rating order by product_id) as row_num
+from ecp.dbo.products1
+
+with duplicate_cte3 as(
+select *,
+ROW_NUMBER() over(partition by product_id,product_name,category,brand,price,rating order by product_id) as row_num
+from ecp.dbo.products1
+)
+select * 
+from duplicate_cte3
+where row_num > 1
+
+
+--For 'Review Table'
+select *,
+ROW_NUMBER() over(partition by review_id,order_id,product_id,user_id,rating,review_text,review_date,review_time order by review_id) as row_num
+from ecp.dbo.reviews1
+
+with duplicate_cte4 as(
+select *,
+ROW_NUMBER() over(partition by review_id,order_id,product_id,user_id,rating,review_text,review_date,review_time order by review_id) as row_num
+from ecp.dbo.reviews1
+)
+select * 
+from duplicate_cte4
+where row_num > 1
+
+
+--For 'Users Tables'
+select *,
+ROW_NUMBER() over(partition by user_id,user_name,email,gender,city,signup_date order by user_id) as row_num
+from ecp.dbo.users1
+
+with duplicate_cte5 as(
+select *,
+ROW_NUMBER() over(partition by user_id,user_name,email,gender,city,signup_date order by user_id) as row_num
+from ecp.dbo.users1
+)
+select * 
+from duplicate_cte5
+where row_num > 1
+
+--Result : No null value is found so,data is clear
+
+
+--Standardization Of Data
+
+
+--For 'Events Table'
+select *
+from ecp.dbo.users1
+
+alter table ecp.dbo.events1
+drop column event_time
+
+
+--For 'Orders Table'
+select *
+from ecp.dbo.orders1
+
+select total_amount , ROUND(total_amount,0)
+from ecp.dbo.orders1
+
+update ecp.dbo.orders1
+set total_amount = ROUND(total_amount,0)
+
+alter table ecp.dbo.orders1
+drop column order_time
+
+
+--For 'Products Table'
+select *
+from ecp.dbo.products1
+
+select price , ROUND(price,0) , 
+rating , ROUND(rating,1)
+from ecp.dbo.products1
+
+update ecp.dbo.products1
+set price = ROUND(price,0)
+
+update ecp.dbo.products1
+set rating = ROUND(rating,1)
+
+
+--For 'Review Table'
+select *
+from ecp.dbo.reviews1
+
+alter table ecp.dbo.reviews1
+drop column review_time
+
+
+--For 'Users Table'
+select *
+from ecp.dbo.users1
+
+
+--Result : We standardized all tables.
