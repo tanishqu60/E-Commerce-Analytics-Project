@@ -1,1 +1,165 @@
+/*
+=====================================================================================================================
+KPI Of Customer : Finding all important business kpi's related to customer
+=====================================================================================================================
+Objective : Used for analyzing customer behaviour while using the application 
+            1. It helps in finding important business insights
+            2. Used for increasing the growth of organizaton
+            3. For detecting flaws in any functionality
+            4. Which customers are contributing more in growth of organization
+=====================================================================================================================
+*\
 
+
+
+--Exploratory data analysis of E_Commerce Product analysis
+
+
+--Calculating Important KPI's related to 'Customer'
+--0.Total Users , Total Sessions , Event Distributions
+--1.DAU(Daily Active Customers)
+--2.Retention
+--3.Conversion Rates
+--4.Funnel Analysis
+--5.Drop-offs
+
+
+--0. Total Users,Total Sessions,Event Distributions
+
+--Total distinct Users
+select distinct count(*) as total_users
+from ecp.dbo.users1 
+
+--Total Sessions
+select count(*) as Total_sessions
+from ecp.dbo.events1
+
+select count(distinct event_type) as Distinct_sessions
+from ecp.dbo.events1 
+
+select distinct event_type as Sessions_name
+from ecp.dbo.events1
+
+--Total Event Distributions
+select event_type ,
+count(*) as Users
+from ecp.dbo.events1
+group by event_type
+
+--1.DAU(Daily Active Users)
+--Find : 'How many unique users used the app each day?'
+select event_date as date,
+count(distinct user_id) as DAU
+from ecp.dbo.events1
+group by event_date
+order by event_date
+
+--Result : Here We have datewise users which activately using our application.
+
+--2.Retention Rate 
+--Find: 'How many users returned the next day after signup?'
+
+with signup_users as(
+select user_id,
+signup_date as signup_day
+from ecp.dbo.users1
+),
+returning_users as(
+select distinct s.user_id 
+from signup_users as s
+join ecp.dbo.events1 e
+    on s.user_id = e.user_id
+where e.event_date = DATEADD(day,1,s.signup_day)
+)
+select count(distinct r.user_id) * 100.0 / count(distinct s.user_id) as Retention_rate
+from signup_users as s
+left join returning_users as r
+    on s.user_id = r.user_id
+
+--Result : Day-1 retention rate of this application is extremely low comes nearly 1.12
+--Recommendation : Give some discounts , enhance user experience while using the application
+
+
+--3. Conversion Rate
+--Find : 'What percentage of users purchased?'
+
+select ROUND(count(distinct case when event_type = 'purchase' then user_id
+             end) * 100.0/count(distinct user_id) ,1) as Conversion_rate
+from ecp.dbo.events1
+
+--result : The conversion rate of this company is very good 32.8
+--Recommendation : Keep improving conversion rate by enhancing product quality and give discount in products which is less sold
+
+
+--4.Funnel Analysis
+/*Find : 1.app_open
+         2.view_product
+         3.add_to_cart
+         4.purchase */
+select
+count(distinct case when event_type = 'view' then user_id
+             end) as viewed,
+count(distinct case when event_type = 'cart' then user_id
+             end) as cart_users,
+count(distinct case when event_type = 'wishlist' then user_id
+             end) as wishlisted_users,
+count(distinct case when event_type = 'purchase' then user_id
+             end) as purchasers
+from ecp.dbo.events1
+
+--Results : Here we calculate funnel analysis and count number of users who viewed,cart,wishlist and purchase
+
+
+--5.Drop_off Analysis
+--Find : Drop between product View -> Add_to_cart
+
+with funnel as(
+select
+count(distinct case when event_type = 'view' then user_id
+             end) as viewed,
+count(distinct case when event_type = 'cart' then user_id
+             end) as carted
+from ecp.dbo.events1 
+)
+select 
+viewed,
+carted,
+viewed - carted as drop_off_users,
+CONCAT((viewed - carted) * 100/ viewed,'%') as drop_off_rate
+from funnel
+
+--Results : Here drop_off_rate comes to 29% which is very good means application or company doing really-well
+
+with funnel2 as
+(
+select
+count(distinct case when event_type = 'view' then user_id
+             end) as viewed,
+count(distinct case when event_type = 'cart' then user_id
+             end) as carted,
+count(distinct case when event_type = 'wishlist' then user_id
+             end) as wishlisted,
+count(distinct case when event_type = 'purchase' then user_id
+             end) as purchased
+from ecp.dbo.events1
+)
+select 
+viewed,
+carted,
+wishlisted,
+purchased,
+CONCAT(carted * 100 / viewed,'%') as view_to_cart_rate,
+CONCAT(wishlisted * 100 / carted,'%') as carted_to_wishlisted_rate,
+CONCAT(purchased * 100 / wishlisted,'%') as wishlisted_to_purchased_rate
+from funnel2
+
+/*
+Result : Here we calculate view_to_cart_rate,carted_to_wishlisted_rate,wishlisted_to_purchased_rate
+           which comes out to be 70%,78%,59% which is Very good.
+Recommendation : Although all calculated rate are very good,
+                   But we can improve view_to_cart_rate by increasing the user experience in our site
+                   and also remove those product which is selling less and add new products or give 
+                   discounts in less carted products.
+                   Also, we can increase wishlisted_to_purchased_rate by user payment experience ,
+                   increasing transparency , Remove unnecessary taxes , increase payment methods.
+*/
