@@ -1,0 +1,68 @@
+table products1
+	lineageTag: bb15961f-19eb-433b-8e6a-314e7253617e
+
+	column product_id
+		dataType: string
+		lineageTag: 32bff0b0-b907-4a10-a68d-8775fd65526d
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_name
+		dataType: string
+		lineageTag: f8b0f975-4613-4472-8454-5fe3dd7bf02f
+		summarizeBy: none
+		sourceColumn: product_name
+
+		annotation SummarizationSetBy = Automatic
+
+	column category
+		dataType: string
+		lineageTag: 69c5f40f-eb5d-4fe7-a079-44604e618b73
+		summarizeBy: none
+		sourceColumn: category
+
+		annotation SummarizationSetBy = Automatic
+
+	column brand
+		dataType: string
+		lineageTag: bd9c5c96-fe1c-4773-973f-1aeb6096320a
+		summarizeBy: none
+		sourceColumn: brand
+
+		annotation SummarizationSetBy = Automatic
+
+	column price
+		dataType: double
+		lineageTag: 9bc80e59-cbb1-4781-85bd-70ef7da4afdb
+		summarizeBy: none
+		sourceColumn: price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column rating
+		dataType: double
+		lineageTag: 4458f927-5d6d-4d74-b43e-c5175fb8007b
+		summarizeBy: none
+		sourceColumn: rating
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition products1 = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\tanis\OneDrive\All_DataSet\Working_ecommerce_dataset\products1.xlsx"), null, true),
+				    products1_Sheet = Source{[Item="products1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(products1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"product_id", type text}, {"product_name", type text}, {"category", type text}, {"brand", type text}, {"price", type number}, {"rating", type number}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

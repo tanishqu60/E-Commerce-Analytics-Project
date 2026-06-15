@@ -1,0 +1,77 @@
+table order_items
+	lineageTag: dd4ac07f-f747-4bee-aa71-0a1ed8ef434c
+
+	column order_item_id
+		dataType: string
+		lineageTag: e4902c7f-309e-49be-a60b-abc905c43fa4
+		summarizeBy: none
+		sourceColumn: order_item_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_id
+		dataType: string
+		lineageTag: b4da51e4-e865-47b3-9d4f-6308e30840d8
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column product_id
+		dataType: string
+		lineageTag: a3761720-877c-4f12-9940-b328c99a6d4e
+		summarizeBy: none
+		sourceColumn: product_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column user_id
+		dataType: string
+		lineageTag: 67d425a3-020a-4e0a-ae9e-e6ca0d7b7374
+		summarizeBy: none
+		sourceColumn: user_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column quantity
+		dataType: int64
+		formatString: 0
+		lineageTag: 962cec1b-8d08-4312-ac62-e93386d6a095
+		summarizeBy: sum
+		sourceColumn: quantity
+
+		annotation SummarizationSetBy = Automatic
+
+	column item_price
+		dataType: double
+		lineageTag: 667ef399-edfe-4b8d-aafe-cb45d8113688
+		summarizeBy: sum
+		sourceColumn: item_price
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	column item_total
+		dataType: double
+		lineageTag: 49257369-a92c-45c6-b24a-f47d0d9cabe1
+		summarizeBy: sum
+		sourceColumn: item_total
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition order_items = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\tanis\OneDrive\All_DataSet\Working_ecommerce_dataset\order_items1.xlsx"), null, true),
+				    order_items_Sheet = Source{[Item="order_items",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(order_items_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"order_item_id", type text}, {"order_id", type text}, {"product_id", type text}, {"user_id", type text}, {"quantity", Int64.Type}, {"item_price", type number}, {"item_total", type number}})
+				in
+				    #"Changed Type"
+
+	annotation PBI_ResultType = Table
+

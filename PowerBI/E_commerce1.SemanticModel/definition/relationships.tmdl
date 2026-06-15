@@ -1,0 +1,41 @@
+relationship 467dd1b6-3c94-4d97-8cf0-b9dcaf9ad827
+	joinOnDateBehavior: datePartOnly
+	fromColumn: orders1.order_date
+	toColumn: LocalDateTable_6b6bc93c-1b55-40f0-8cfc-a9623bae8d57.Date
+
+relationship AutoDetected_1518f82c-7e73-4b2e-bb8b-cd745dc7d553
+	crossFilteringBehavior: bothDirections
+	fromColumn: order_items.order_id
+	toColumn: orders1.order_id
+
+relationship AutoDetected_e037cb31-2ebc-4fe6-ba83-925a402359f2
+	crossFilteringBehavior: bothDirections
+	fromColumn: order_items.product_id
+	toColumn: products1.product_id
+
+relationship 8454919c-5093-4a4e-9960-ffe93c8a0dc5
+	joinOnDateBehavior: datePartOnly
+	fromColumn: users1.signup_date
+	toColumn: LocalDateTable_645020e9-2eba-49ba-ab75-5e5e1d8f1d76.Date
+
+relationship AutoDetected_a4a067bd-6cda-482d-94ee-ab06582cb4a6
+	crossFilteringBehavior: bothDirections
+	fromColumn: order_items.user_id
+	toColumn: users1.user_id
+
+relationship 34553884-c70e-471c-ba51-66b3ae522681
+	joinOnDateBehavior: datePartOnly
+	fromColumn: events1.event_date
+	toColumn: LocalDateTable_f5b8ca46-20b6-4b09-a6c9-24efd50bede7.Date
+
+relationship fbecb597-9f18-7800-c2af-99de766cf458
+	crossFilteringBehavior: bothDirections
+	fromColumn: events1.user_id
+	toColumn: users1.user_id
+
+relationship 0a9e9b02-9c91-938b-3cae-7b7c6307fd7c
+	crossFilteringBehavior: bothDirections
+	toCardinality: many
+	fromColumn: events1.user_id
+	toColumn: order_items.user_id
+

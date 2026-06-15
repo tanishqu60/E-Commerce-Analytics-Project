@@ -1,0 +1,86 @@
+table orders1
+	lineageTag: ccafdeae-35eb-4693-81d9-cf21cd4d302b
+
+	measure 'Total Revenue' = CALCULATE(SUM(orders1[total_amount]),events1[event_type] = "purchase")
+		lineageTag: 24813f2e-4342-4ecb-96d0-ac65ebdc227a
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure AOV = CALCULATE(SUM(orders1[total_amount])/COUNT(orders1[order_id]),events1[event_type]="purchase")
+		lineageTag: de7f4dc8-09f2-4e8b-b464-3f78a5c71bb7
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Orders' = CALCULATE(COUNT(orders1[user_id]),events1[event_type]="purchase")
+		formatString: 0
+		lineageTag: 578c85dd-fddf-44bf-af34-d5f58ad2ee1d
+
+	measure 'Conversion Rate' = ROUND(CALCULATE(DISTINCTCOUNT(orders1[user_id]),events1[event_type]="purchase")*100/COUNT(orders1[user_id]),2)
+		lineageTag: 54e55289-d175-4d0b-8ffa-50b9128edb7b
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	measure 'Total Customers' = ```
+			COUNT(users1[user_id]) 
+			```
+		formatString: 0
+		lineageTag: fa92cd1f-508f-471d-900e-02587aee34fe
+
+	column order_id
+		dataType: string
+		lineageTag: 37f8f065-6ab9-434b-b5ea-0e06c6673bab
+		summarizeBy: none
+		sourceColumn: order_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column user_id
+		dataType: string
+		lineageTag: e16e43d3-30f4-44ea-af14-ce53d44b7a08
+		summarizeBy: none
+		sourceColumn: user_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column order_date
+		dataType: dateTime
+		formatString: Long Date
+		lineageTag: 0e396fd8-f6a9-46fa-84db-3a4eee2e43af
+		summarizeBy: none
+		sourceColumn: order_date
+
+		variation Variation
+			isDefault
+			relationship: 467dd1b6-3c94-4d97-8cf0-b9dcaf9ad827
+			defaultHierarchy: LocalDateTable_6b6bc93c-1b55-40f0-8cfc-a9623bae8d57.'Date Hierarchy'
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation UnderlyingDateTimeDataType = Date
+
+	column total_amount
+		dataType: double
+		lineageTag: 64e41a53-3658-4356-9f98-bf1bdd498f85
+		summarizeBy: sum
+		sourceColumn: total_amount
+
+		annotation SummarizationSetBy = Automatic
+
+		annotation PBI_FormatHint = {"isGeneralNumber":true}
+
+	partition orders1 = m
+		mode: import
+		source =
+				let
+				    Source = Excel.Workbook(File.Contents("C:\Users\tanis\OneDrive\All_DataSet\Working_ecommerce_dataset\orders1.xlsx"), null, true),
+				    orders1_Sheet = Source{[Item="orders1",Kind="Sheet"]}[Data],
+				    #"Promoted Headers" = Table.PromoteHeaders(orders1_Sheet, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"order_id", type text}, {"user_id", type text}, {"order_date", type date}, {"order_time", type datetime}, {"total_amount", type number}}),
+				    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"order_time"})
+				in
+				    #"Removed Columns"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
