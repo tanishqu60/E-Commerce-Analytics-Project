@@ -57,7 +57,8 @@ The dashboard enables stakeholders to monitor KPIs and quickly identify opportun
 
 > **Power BI Dashboard**
 
-![Dashboard](dashboard.png)
+<img width="1772" height="895" alt="Screenshot 2026-07-31 113101" src="https://github.com/user-attachments/assets/e40839f8-4fa7-4780-9684-76251cbbb3a3" />
+
 
 ---
 
