@@ -359,7 +359,7 @@ The dashboard provides executives and business stakeholders with a clear underst
 
 **Your Name**
 
-GitHub: https://github.com/yourusername
+GitHub:[ https://github.com/yourusername](https://github.com/repos?q=owner%3A%40me)
 
 If you found this project helpful, don't forget to ⭐ star the repository!
 
